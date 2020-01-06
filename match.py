@@ -50,7 +50,7 @@ def matcherTesting(matcherType,removeStopWords=False):
 
         res = json.load(open(os.path.join("data/processed/reply/",str(int(index/1000))+'.json'),'r',encoding='utf-8'))
         targetId = index % 1000
-        #randomId = random.randrange(0,len(res[targetId]))
+        # randomId = random.choice(res[targetId])
 
         evaluator = Evaluator()
         candiates = evaluator.getBestResponse(responses=res[targetId],topk=5,debugMode=False)
