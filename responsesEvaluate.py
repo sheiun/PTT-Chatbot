@@ -7,7 +7,7 @@ from collections import defaultdict
 from gensim import corpora
 
 # 引入斷詞與停用詞的配置
-from Matcher.matcher import Matcher
+from matcher.matcher import Matcher
 
 
 class Evaluator(Matcher):

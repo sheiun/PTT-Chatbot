@@ -1,6 +1,6 @@
 from fuzzywuzzy import fuzz, process
 
-from . import Matcher
+from .matcher import Matcher
 
 
 class FuzzyMatcher(Matcher):

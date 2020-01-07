@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from Matcher import bestMatchingMatcher, FuzzyMatcher, WordWeightMatcher
+from matcher import bestMatchingMatcher, FuzzyMatcher, WordWeightMatcher
 from responsesEvaluate import Evaluator
 
 

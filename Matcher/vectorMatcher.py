@@ -1,7 +1,7 @@
 from gensim import models, corpora
 from sklearn import svm
 
-from . import Matcher
+from .matcher import Matcher
 
 
 class VectorMatcher(Matcher):

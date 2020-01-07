@@ -1,4 +1,4 @@
-from . import Matcher
+from .matcher import Matcher
 
 
 class KeywordMatcher(Matcher):

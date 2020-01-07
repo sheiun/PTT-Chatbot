@@ -3,6 +3,8 @@ import os
 
 import jieba_fast as jieba
 
+jieba.set_dictionary("jieba_dictionary/dict.txt.big")
+
 
 class Matcher(object):
 

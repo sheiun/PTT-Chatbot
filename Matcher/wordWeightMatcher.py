@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import gensim
 
-from . import Matcher
+from .matcher import Matcher
 
 
 class WordWeightMatcher(Matcher):
