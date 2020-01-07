@@ -1,6 +1,7 @@
-from .matcher import Matcher
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
+from fuzzywuzzy import fuzz, process
+
+from . import Matcher
+
 
 class FuzzyMatcher(Matcher):
 
@@ -38,9 +39,9 @@ class FuzzyMatcher(Matcher):
         r2 = fuzz.ratio(query, raw2)
 
         if r1 > r2:
-            return (raw1,i)
+            return (raw1, i)
         else:
-            return (raw2,j)
+            return (raw2, j)
 
     def match(self, query):
         """
@@ -50,30 +51,33 @@ class FuzzyMatcher(Matcher):
             - query: 使用者欲查詢的語句
             - removeStopWords: 清除 stopwords
         """
-        ratio  = -1
+        ratio = -1
         target = ""
         target_idx = -1
 
         if self.cleanStopWords:
-            mQuery = [word for word in self.wordSegmentation(query)
-                      if word not in self.stopwords]
+            mQuery = [
+                word
+                for word in self.wordSegmentation(query)
+                if word not in self.stopwords
+            ]
             mQuery = "".join(mQuery)
             title_list = self.segTitles
         else:
             title_list = self.titles
             mQuery = query
 
-        for index,title in enumerate(title_list):
+        for index, title in enumerate(title_list):
 
             newRatio = fuzz.ratio(mQuery, title)
 
             if newRatio > ratio:
-                ratio  = newRatio
+                ratio = newRatio
                 target = title
                 target_idx = index
 
             elif self.cleanStopWords and newRatio == ratio:
-                target, target_idx = self.tieBreak(query,target_idx,index)
+                target, target_idx = self.tieBreak(query, target_idx, index)
 
         self.similarity = ratio
-        return target,target_idx
+        return target, target_idx

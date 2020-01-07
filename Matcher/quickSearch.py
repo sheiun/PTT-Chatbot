@@ -7,7 +7,7 @@ class QuickSearcher(object):
     def __init__(self, docs=None):
 
         self.inverted_word_dic = dict()
-        #self.buildInvertedIndex(docs)
+        # self.buildInvertedIndex(docs)
 
     def buildInvertedIndex(self, docs):
 
@@ -18,7 +18,7 @@ class QuickSearcher(object):
             - docs: 欲建構的倒排索引表列，每個 doc 需「完成斷詞」
         """
 
-        for doc_id,doc in enumerate(docs):
+        for doc_id, doc in enumerate(docs):
             for word in doc:
                 if word not in self.inverted_word_dic.keys():
                     self.inverted_word_dic[word] = set()

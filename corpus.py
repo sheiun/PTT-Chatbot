@@ -6,13 +6,12 @@ from article import Article
 
 
 class Corpus(object):
-
     def __init__(self):
         self.corpus = []
         pass
 
-class PTTCorpus(Corpus):
 
+class PTTCorpus(Corpus):
     def __init__(self):
         self.corpus = []
 
@@ -27,7 +26,7 @@ class PTTCorpus(Corpus):
             filenames = [path]
 
         for filename in filenames:
-            with open(os.path.join(path, filename),'r', encoding="utf-8") as data:
+            with open(os.path.join(path, filename), "r", encoding="utf-8") as data:
                 tp = json.load(data)
                 for article in tp:
                     try:
@@ -41,7 +40,7 @@ class PTTCorpus(Corpus):
             title = article.title
             resp = ""
             for r in article.responses:
-                resp += ' ' + r["Content"]
+                resp += " " + r["Content"]
             yield title + resp
 
     def get_titles(self):

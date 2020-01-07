@@ -1,11 +1,11 @@
-import math
 import logging
+import math
+from collections import defaultdict
 
 import gensim
 
-from collections import defaultdict
+from . import Matcher
 
-from .matcher import Matcher
 
 class WordWeightMatcher(Matcher):
 
@@ -13,13 +13,13 @@ class WordWeightMatcher(Matcher):
     採用詞權重來比對短語相似度
     """
 
-    def __init__(self, segLib="Taiba"):
+    def __init__(self, segLib="jieba"):
 
         super().__init__(segLib)
 
-        self.wordDictionary = defaultdict(int) # 保存每個詞的出現次數
-        self.totalWords = 0 # 詞總數
-        self.wordWeights = defaultdict(int) # 保存每個詞的權重
+        self.wordDictionary = defaultdict(int)  # 保存每個詞的出現次數
+        self.totalWords = 0  # 詞總數
+        self.wordWeights = defaultdict(int)  # 保存每個詞的權重
 
     def initialize(self):
         logging.info("初始化模塊中...")
@@ -47,22 +47,25 @@ class WordWeightMatcher(Matcher):
         # http://www.52nlp.cn/forgetnlp4
         # 此處儲存的 weight 為後項，即 -1 * log(N/T)
 
-        for word,count in self.wordDictionary.items():
-            self.wordWeights[word] = -1 * math.log10(count/self.totalWords)
+        for word, count in self.wordDictionary.items():
+            self.wordWeights[word] = -1 * math.log10(count / self.totalWords)
         logging.info("詞統計完成")
 
     def getCooccurrence(self, q1, q2):
+        """Get cooccurrence from two iterable objects
 
-        #TODO NEED OPTIMIZE!!!!
-        res = []
-        for word in q1:
-            if word in q2:
-                res.append(word)
-        return res
+        Args:
+            q1 (Iterable): first iterable object
+            q2 (Iterable): second iterable object
+
+        Returns:
+            cooccurrence (list): intersection of q1 and q2
+        """
+        return list(set(q1).intersection(q2))
 
     def getWordWeight(self, word, n=1):
-        #TODO FIX N
-        return(n * self.wordWeights[word])
+        # TODO FIX N
+        return n * self.wordWeights[word]
 
     def match(self, query, sort=False):
 
@@ -74,16 +77,17 @@ class WordWeightMatcher(Matcher):
         target = ""
         index = -1
 
-        segQuery = [word for word in self.wordSegmentation(query)
-                    if word not in self.stopwords]
+        segQuery = [
+            word for word in self.wordSegmentation(query) if word not in self.stopwords
+        ]
 
-        for index,title in enumerate(self.segTitles):
+        for index, title in enumerate(self.segTitles):
 
             if len(title) == 0:
                 continue
 
-            allWordsWeight = 0.
-            coWordsWeight = 0.
+            allWordsWeight = 0.0
+            coWordsWeight = 0.0
 
             coWords = self.getCooccurrence(title, segQuery)
 
@@ -96,13 +100,13 @@ class WordWeightMatcher(Matcher):
             for word in segQuery:
                 if word not in coWords:
                     allWordsWeight += self.getWordWeight(word)
-            similarity = coWordsWeight/allWordsWeight
+            similarity = coWordsWeight / allWordsWeight
 
             if similarity > max_similarity:
                 max_similarity = similarity
                 target = title
                 target_idx = index
 
-        self.similarity = max_similarity * 100 #統一為百分制
+        self.similarity = max_similarity * 100  # 統一為百分制
 
-        return target,target_idx
+        return target, target_idx

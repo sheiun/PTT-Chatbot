@@ -1,14 +1,15 @@
-from gensim import models,corpora
+from gensim import models, corpora
 from sklearn import svm
 
 from . import Matcher
 
-class VectorMatcher(Matcher):
 
+class VectorMatcher(Matcher):
     def __init__(self):
 
         self.vecModel = None
-        #TODO
+        # TODO
 
     def match(self, query):
-        #TODO
+        pass
+        # TODO

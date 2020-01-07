@@ -1,4 +1,5 @@
-from .matcher import Matcher
+from . import Matcher
+
 
 class KeywordMatcher(Matcher):
 
@@ -9,7 +10,8 @@ class KeywordMatcher(Matcher):
     def __init__(self):
 
         self.vecModel = None
-        #TODO
+        # TODO
 
     def match(self, query):
-        #TODO
+        pass
+        # TODO

@@ -1,13 +1,8 @@
 import logging
 import os
-import jieba
 
-try:
-    import Taiba
-except:
-    # It's ok now.
-    # The default word segment module have changed to jieba.
-    pass
+import jieba_fast as jieba
+
 
 class Matcher(object):
 
@@ -18,42 +13,34 @@ class Matcher(object):
 
     def __init__(self, segLib="jieba"):
 
-        logging.basicConfig(format='%(asctime)s : %(threadName)s : %(levelname)s : %(message)s', level=logging.INFO)
-        self.titles = [] # 欲進行匹配的所有標題
-        self.segTitles = [] # 斷好詞的標題
+        logging.basicConfig(
+            format="%(asctime)s : %(threadName)s : %(levelname)s : %(message)s",
+            level=logging.INFO,
+        )
+        self.titles = []  # 欲進行匹配的所有標題
+        self.segTitles = []  # 斷好詞的標題
 
         self.stopwords = set()
-        self.similarity = 1.
+        self.similarity = 1.0
 
-        if segLib == "Taiba":
-            self.useTaiba = True
-            logging.info("[Matcher] : Select Taiba for word segment.")
-        else:
-            self.useTaiba = False
-            logging.info("[Matcher] : Select jieba for word segment.")
+        logging.info("[Matcher] : Select jieba for word segment.")
 
     def jiebaCustomSetting(self, dict_path, usr_dict_path):
 
         jieba.set_dictionary(dict_path)
-        with open(usr_dict_path, 'r', encoding='utf-8') as dic:
+        with open(usr_dict_path, "r", encoding="utf-8") as dic:
             for word in dic:
-                jieba.add_word(word.strip('\n'))
-
-    def TaibaCustomSetting(self, usr_dict):
-
-        with open(usr_dict, 'r', encoding='utf-8') as dic:
-            for word in dic:
-                Taiba.add_word(word.strip('\n'))
+                jieba.add_word(word.strip("\n"))
 
     def loadStopWords(self, path):
-        with open(path, 'r', encoding='utf-8') as sw:
+        with open(path, "r", encoding="utf-8") as sw:
             for word in sw:
-                self.stopwords.add(word.strip('\n'))
+                self.stopwords.add(word.strip("\n"))
 
     def loadTitles(self, path):
 
-        with open(path,'r',encoding='utf-8') as data:
-            self.titles = [line.strip('\n') for line in data]
+        with open(path, "r", encoding="utf-8") as data:
+            self.titles = [line.strip("\n") for line in data]
 
     def match(self, query):
         """
@@ -69,21 +56,28 @@ class Matcher(object):
         result = None
         for index, title in enumerate(self.titles):
             if title == query:
-                return title,index
+                return title, index
 
     def getSimilarity(self):
         return self.similarity
 
     def wordSegmentation(self, string):
 
-        tp = None
+        tp = jieba.lcut(string, cut_all=True)
 
-        if self.useTaiba:
-            tp = Taiba.lcut(string,CRF=True) # list
-        else:
-            tp = jieba.cut(string,cut_all=True) # generator
+        return tp
 
-        return [q for q in tp]
+    def is_segmentation_correct(
+        self, seg="data/SegTitles.txt", origin="data/Titles.txt",
+    ):
+        """
+        Check the last line of seg and origin is correct
+        """
+        seg = open(seg).readlines()
+        origin = open(origin).readlines()
+        return len(seg) == len(origin) and all(
+            [t in origin[-1].strip() for t in seg[-1].strip().split(" ")]
+        )
 
     def TitlesSegmentation(self, cleanStopwords=False):
 
@@ -97,14 +91,19 @@ class Matcher(object):
         logging.info("正準備將 titles 斷詞")
 
         count = 0
-        if not os.path.exists('data/SegTitles.txt'):
+        if not os.path.exists("data/SegTitles.txt") or not self.is_segmentation_correct(
+            "data/SegTitles.txt", "data/Titles.txt"
+        ):
 
             self.segTitles = []
             for title in self.titles:
 
                 if cleanStopwords:
-                    clean = [word for word in self.wordSegmentation(title)
-                            if word not in self.stopwords]
+                    clean = [
+                        word
+                        for word in self.wordSegmentation(title)
+                        if word not in self.stopwords
+                    ]
                     self.segTitles.append(clean)
                 else:
                     self.segTitles.append(self.wordSegmentation(title))
@@ -113,19 +112,18 @@ class Matcher(object):
                 if count % 1000 == 0:
                     logging.info("已斷詞完前 %d 篇文章" % count)
 
-            with open('data/SegTitles.txt','w',encoding="utf-8") as seg_title:
+            with open("data/SegTitles.txt", "w", encoding="utf-8") as seg_title:
                 for title in self.segTitles:
-                    seg_title.write(' '.join(title) + '\n')
+                    seg_title.write(" ".join(title) + "\n")
             logging.info("完成標題斷詞，結果已暫存至 data/SegTitles.txt")
         else:
             logging.info("偵測到先前的標題斷詞結果，讀取中...")
-            with open('data/SegTitles.txt','r',encoding="utf-8") as seg_title:
+            with open("data/SegTitles.txt", "r", encoding="utf-8") as seg_title:
                 for line in seg_title:
-                    line = line.strip('\n')
+                    line = line.strip("\n")
                     seg = line.split()
 
                     if cleanStopwords:
-                        seg = [word for word in seg
-                               if word not in self.stopwords]
+                        seg = [word for word in seg if word not in self.stopwords]
                     self.segTitles.append(seg)
                 logging.info("%d 個標題已完成載入" % len(self.segTitles))

@@ -17,7 +17,7 @@ class Article(object):
         self.down = article["DownVote"]
         self.noVote = article["NoVote"]
         self.hot = self.up + self.down + self.noVote
-        self.grade = (self.up - self.down)/self.hot
+        self.grade = (self.up - self.down) / self.hot
 
         self.responses = []
         self.merge_response(article["Responses"])
@@ -30,19 +30,19 @@ class Article(object):
         cur_resp = {
             "User": responses[0]["User"],
             "Content": responses[0]["Content"],
-            "Vote": responses[0]["Vote"]
+            "Vote": responses[0]["Vote"],
         }
 
-        for i in range(1,len(responses)-1):
+        for i in range(1, len(responses) - 1):
 
             if responses[i]["User"] == cur_resp["User"]:
-                cur_resp["Content"].rsrtip('\n') # 將上一篇推文的換行去除
+                cur_resp["Content"].rsrtip("\n")  # 將上一篇推文的換行去除
                 cur_resp["Content"] += responses[i]["Content"]
             else:
                 self.responses.append(cur_resp)
                 cur_resp = {
                     "User": responses[i]["User"],
                     "Content": responses[i]["Content"],
-                    "Vote": responses[i]["Vote"]
+                    "Vote": responses[i]["Vote"],
                 }
         self.responses.append(cur_resp)

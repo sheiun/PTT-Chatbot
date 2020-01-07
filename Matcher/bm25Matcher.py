@@ -3,6 +3,7 @@ import math
 from .matcher import Matcher
 from .quickSearch import QuickSearcher
 
+
 class bestMatchingMatcher(Matcher):
 
     """
@@ -13,11 +14,11 @@ class bestMatchingMatcher(Matcher):
         super().__init__(segLib)
 
         self.cleanStopWords = removeStopWords
-        self.D = 0 # 句子總數
+        self.D = 0  # 句子總數
 
-        self.wordset = set() # Corpus 中所有詞的集合
+        self.wordset = set()  # Corpus 中所有詞的集合
         self.words_location_record = dict()  # 紀錄該詞 (key) 出現在哪幾個句子(id)
-        self.words_idf = dict() # 紀錄每個詞的 idf 值
+        self.words_idf = dict()  # 紀錄每個詞的 idf 值
 
         self.f = []
         self.df = {}
@@ -25,18 +26,18 @@ class bestMatchingMatcher(Matcher):
         self.k1 = 1.5
         self.b = 0.75
 
-        self.searcher = QuickSearcher() # 問句篩選
+        self.searcher = QuickSearcher()  # 問句篩選
 
         if removeStopWords:
             self.loadStopWords("data/stopwords/chinese_sw.txt")
             self.loadStopWords("data/stopwords/specialMarks.txt")
 
-    def initialize(self,ngram=1):
+    def initialize(self, ngram=1):
 
         assert len(self.titles) > 0, "請先載入短語表"
 
-        self.TitlesSegmentation() # 將 self.titles 斷詞為  self.segTitles
-        #self.calculateIDF() # 依照斷詞後結果, 計算每個詞的 idf value
+        self.TitlesSegmentation()  # 將 self.titles 斷詞為  self.segTitles
+        # self.calculateIDF() # 依照斷詞後結果, 計算每個詞的 idf value
         self.initBM25()
         self.searcher.buildInvertedIndex(self.segTitles)
 
@@ -64,7 +65,7 @@ class bestMatchingMatcher(Matcher):
                     self.df[k] = 0
                 self.df[k] += 1
         for k, v in self.df.items():
-            self.idf[k] = math.log(self.D-v+0.5)-math.log(v+0.5)
+            self.idf[k] = math.log(self.D - v + 0.5) - math.log(v + 0.5)
 
         print("BM25模塊初始化完成")
 
@@ -74,9 +75,15 @@ class bestMatchingMatcher(Matcher):
             if word not in self.f[index]:
                 continue
             d = len(self.segTitles[index])
-            score += (self.idf[word]*self.f[index][word]*(self.k1+1)
-                      / (self.f[index][word]+self.k1*(1-self.b+self.b*d
-                                                      / self.avgdl)))
+            score += (
+                self.idf[word]
+                * self.f[index][word]
+                * (self.k1 + 1)
+                / (
+                    self.f[index][word]
+                    + self.k1 * (1 - self.b + self.b * d / self.avgdl)
+                )
+            )
         return score
 
     def calculateIDF(self):
@@ -89,14 +96,15 @@ class bestMatchingMatcher(Matcher):
 
         # 計算 idf
         for word in self.wordset:
-            self.words_idf[word] = math.log2((self.D + .5)/(self.words_location_record[word] + .5))
-
+            self.words_idf[word] = math.log2(
+                (self.D + 0.5) / (self.words_location_record[word] + 0.5)
+            )
 
     def buildWordLocationRecord(self):
         """
         建構詞與詞出現位置（句子id）的字典
         """
-        for idx,seg_title in enumerate(self.segTitles):
+        for idx, seg_title in enumerate(self.segTitles):
             for word in seg_title:
                 if self.words_location_record[word] is None:
                     self.words_location_record[word] = set()
@@ -110,20 +118,19 @@ class bestMatchingMatcher(Matcher):
             for word in seg_title:
                 self.wordset.add(word)
 
-    def addNgram(self,n):
+    def addNgram(self, n):
         """
         擴充 self.seg_titles 為 n-gram
         """
         idx = 0
 
         for seg_list in self.segTitles:
-            ngram = self.generateNgram(n,self.titles[idx])
+            ngram = self.generateNgram(n, self.titles[idx])
             seg_list = seg_list + ngram
             idx += 1
 
-    def generateNgram(self,n,sentence):
-        return [sentence[i:i+n] for i in range(0,len(sentence)-1)]
-
+    def generateNgram(self, n, sentence):
+        return [sentence[i : i + n] for i in range(0, len(sentence) - 1)]
 
     def joinTitles(self):
         self.segTitles = ["".join(title) for title in self.segTitles]
@@ -138,12 +145,12 @@ class bestMatchingMatcher(Matcher):
 
         seg_query = self.wordSegmentation(query)
         max = -1
-        target = ''
+        target = ""
         target_idx = -1
 
-        target_index = self.searcher.quickSearch(seg_query) #  只取出必要的 titles
+        target_index = self.searcher.quickSearch(seg_query)  #  只取出必要的 titles
 
-        #for id in target_index:
+        # for id in target_index:
         #    print(self.titles[id])
 
         for index in target_index:
@@ -153,8 +160,8 @@ class bestMatchingMatcher(Matcher):
                 max = score
 
         # normalization
-        max = max / self.sim(self.segTitles[target_idx],target_idx)
-        target = ''.join(self.segTitles[target_idx])
-        self.similarity = max * 100 #百分制
+        max = max / self.sim(self.segTitles[target_idx], target_idx)
+        target = "".join(self.segTitles[target_idx])
+        self.similarity = max * 100  # 百分制
 
-        return target,target_idx
+        return target, target_idx
