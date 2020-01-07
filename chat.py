@@ -3,8 +3,7 @@ import os
 import random
 import logging
 
-import match
-
+from match import getMatcher
 from responsesEvaluate import Evaluator
 
 
@@ -22,7 +21,7 @@ class GossipBot(object):
     """
 
     def __init__(self, match_type="bm25"):
-        self.matcher = match.getMatcher(match_type)
+        self.matcher = getMatcher(match_type)
         self.evaluator = Evaluator()
         self.testSegment()
         self.defaultResponse = ["你在說什麼呢？", "我不太明白你的意思"]
